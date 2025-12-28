@@ -131,10 +131,15 @@ View the project dependency graph:
 nx graph
 ```
 
+## CI/CD
+
+This project uses GitHub Actions for continuous integration and deployment. See [CI/CD Documentation](README.ci.md) for details.
+
 ## Learn More
 
 - [Nx Documentation](https://nx.dev)
 - [Angular Documentation](https://angular.io)
 - [FastAPI Documentation](https://fastapi.tiangolo.com)
 - [uv Documentation](https://github.com/astral-sh/uv)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
 

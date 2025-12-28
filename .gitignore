@@ -66,3 +66,18 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data
 
+# Coverage reports
+coverage/
+*.lcov
+.nyc_output
+coverage.xml
+htmlcov/
+
+# Test results
+test-results/
+playwright-report/
+
+
+.angular
+
+vitest.config.*.timestamp*

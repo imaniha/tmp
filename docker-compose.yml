@@ -1,0 +1,109 @@
+version: '3.8'
+
+services:
+  db:
+    image: mongo:7.0
+    container_name: monorepo-db
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: monorepo_db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - monorepo-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - dev
+
+  api:
+    build:
+      context: ./apps/backend/api
+      dockerfile: Dockerfile
+    container_name: monorepo-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mongodb://admin:admin123@db:27017/monorepo_db?authSource=admin
+      - PROJECT_NAME=Backend API
+      - CORS_ORIGINS=http://localhost:4200,http://web:4200
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - monorepo-network
+    volumes:
+      - ./apps/backend/api:/app
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    profiles:
+      - dev
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: monorepo-web
+    restart: unless-stopped
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - api
+    networks:
+      - monorepo-network
+    volumes:
+      - .:/workspace
+      - /workspace/node_modules
+    command: nx serve frontend --host 0.0.0.0 --port 4200
+    profiles:
+      - dev
+
+  dev:
+    image: alpine:latest
+    container_name: monorepo-dev
+    depends_on:
+      - db
+      - api
+      - web
+    networks:
+      - monorepo-network
+    profiles:
+      - dev
+    command: >
+      sh -c "
+        echo '🚀 Development environment is starting...' &&
+        echo '📦 Waiting for services to be ready...' &&
+        sleep 5 &&
+        echo '' &&
+        echo '✅ Development environment is ready!' &&
+        echo '' &&
+        echo '📍 Services:' &&
+        echo '  - Frontend:  http://localhost:4200' &&
+        echo '  - Backend:   http://localhost:8000' &&
+        echo '  - API Docs:  http://localhost:8000/docs' &&
+        echo '  - MongoDB:   localhost:27017' &&
+        echo '' &&
+        echo '💡 Tips:' &&
+        echo '  - View logs: docker-compose --profile dev logs -f' &&
+        echo '  - Stop:      docker-compose --profile dev down' &&
+        echo '  - Restart:   docker-compose --profile dev restart' &&
+        echo '' &&
+        echo '🔄 Watching for changes... (Press Ctrl+C to stop)' &&
+        tail -f /dev/null
+      "
+
+networks:
+  monorepo-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:

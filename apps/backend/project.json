@@ -1,21 +1,28 @@
 {
   "name": "backend",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/backend",
+  "sourceRoot": "apps/backend/api/src",
   "projectType": "application",
   "targets": {
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000",
-        "cwd": "apps/backend"
+        "command": "uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000",
+        "cwd": "apps/backend/api/src"
       }
     },
     "sync": {
       "executor": "nx:run-commands",
       "options": {
         "command": "uv sync",
-        "cwd": "apps/backend"
+        "cwd": "apps/backend/api"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run pytest",
+        "cwd": "apps/backend/api"
       }
     }
   }
