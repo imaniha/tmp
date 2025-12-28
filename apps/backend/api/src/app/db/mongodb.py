@@ -24,9 +24,13 @@ class MongoDB:
                 db_name = settings.DATABASE_URL.split("/")[-1].split("?")[0]
                 cls.database = cls.client[db_name]
                 print(f"Connected to MongoDB: {db_name}")
+            except Exception as e:
+                print(f"Error connecting to MongoDB: {e}")
+                raise e
             else:
                 # Test if still connected
                 await cls.client.admin.command("ping")
+
         return cls.database
 
     @classmethod
